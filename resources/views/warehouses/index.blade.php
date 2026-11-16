@@ -18,6 +18,7 @@
               <th>Aisle Number</th>
               <th>Rack Code</th>
               <th>Physical Capacity</th>
+              <th>Created By</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -28,26 +29,37 @@
                 <td>{{ $warehouse->aisle_number }}</td>
                 <td>{{ $warehouse->rack_code }}</td>
                 <td>{{ $warehouse->physical_capacity }}</td>
+                <td>{{ $warehouse->user?->name ?? '-' }}</td>
                 <td>
-                  <div class="action-buttons">
-                    <a href="{{ route('warehouses.edit', $warehouse) }}" class="btn-edit">Edit</a>
-                    <form method="POST" action="{{ route('warehouses.destroy', $warehouse) }}" data-confirm="Are you sure you want to delete this warehouse?">
-                      @csrf
-                      @method('DELETE')
-                      <button type="submit" class="btn-delete">Delete</button>
-                    </form>
-                  </div>
+                  @canany(['update', 'delete'], $warehouse)
+                    <div class="action-buttons">
+                      @can('update', $warehouse)
+                        <a href="{{ route('warehouses.edit', $warehouse) }}" class="btn-edit">Edit</a>
+                      @endcan
+                      @can('delete', $warehouse)
+                        <form method="POST" action="{{ route('warehouses.destroy', $warehouse) }}" data-confirm="Are you sure you want to delete this warehouse?">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="btn-delete">Delete</button>
+                        </form>
+                      @endcan
+                    </div>
+                  @else
+                    -
+                  @endcanany
                 </td>
               </tr>
             @empty
-              <tr class="empty-row"><td colspan="5">No warehouses added yet.</td></tr>
+              <tr class="empty-row"><td colspan="6">No warehouses added yet.</td></tr>
             @endforelse
           </tbody>
         </table>
       </div>
     </div>
 
-    <a href="{{ route('warehouses.create') }}" class="btn-add">Add Another Warehouse</a>
+    @can('create', \App\Models\Warehouse::class)
+      <a href="{{ route('warehouses.create') }}" class="btn-add">Add Another Warehouse</a>
+    @endcan
   </div>
 </main>
 @endsection

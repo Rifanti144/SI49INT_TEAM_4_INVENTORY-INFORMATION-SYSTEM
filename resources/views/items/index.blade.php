@@ -19,6 +19,7 @@
               <th>Technical Specifications</th>
               <th>Unit Size</th>
               <th>Category</th>
+              <th>Created By</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -30,26 +31,37 @@
                 <td>{{ $item->tech_spec }}</td>
                 <td>{{ $item->unit_size }}</td>
                 <td>{{ $item->category }}</td>
+                <td>{{ $item->user?->name ?? '-' }}</td>
                 <td>
-                  <div class="action-buttons">
-                    <a href="{{ route('items.edit', $item) }}" class="btn-edit">Edit</a>
-                    <form method="POST" action="{{ route('items.destroy', $item) }}" data-confirm="Are you sure you want to delete this item?">
-                      @csrf
-                      @method('DELETE')
-                      <button type="submit" class="btn-delete">Delete</button>
-                    </form>
-                  </div>
+                  @canany(['update', 'delete'], $item)
+                    <div class="action-buttons">
+                      @can('update', $item)
+                        <a href="{{ route('items.edit', $item) }}" class="btn-edit">Edit</a>
+                      @endcan
+                      @can('delete', $item)
+                        <form method="POST" action="{{ route('items.destroy', $item) }}" data-confirm="Are you sure you want to delete this item?">
+                          @csrf
+                          @method('DELETE')
+                          <button type="submit" class="btn-delete">Delete</button>
+                        </form>
+                      @endcan
+                    </div>
+                  @else
+                    -
+                  @endcanany
                 </td>
               </tr>
             @empty
-              <tr class="empty-row"><td colspan="6">No items added yet.</td></tr>
+              <tr class="empty-row"><td colspan="7">No items added yet.</td></tr>
             @endforelse
           </tbody>
         </table>
       </div>
     </div>
 
-    <a href="{{ route('items.create') }}" class="btn-add">Add Another Item</a>
+    @can('create', \App\Models\Item::class)
+      <a href="{{ route('items.create') }}" class="btn-add">Add Another Item</a>
+    @endcan
   </div>
 </main>
 @endsection
