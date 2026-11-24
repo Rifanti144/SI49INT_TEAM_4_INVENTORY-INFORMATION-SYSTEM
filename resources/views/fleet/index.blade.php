@@ -21,15 +21,13 @@
 
     <div class="table-wrap">
       <div class="table-scroll">
-        <table>
+        <table> 
           <thead>
             <tr>
               <th>Serial Number</th>
               <th>Type</th>
               <th>Status</th>
-              @if (auth()->user()->hasRole('admin', 'staff'))
-                <th>Action</th>
-              @endif
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -38,26 +36,32 @@
                 <td>{{ $vehicle->serial }}</td>
                 <td>{{ ucfirst($vehicle->type) }}</td>
                 <td>{{ ucfirst($vehicle->status) }}</td>
-                @if (auth()->user()->hasRole('admin', 'staff'))
                   <td>
                     <div class="action-buttons">
+                      @can('update', $vehicle)
                       <a href="{{ route('fleet.edit', $vehicle) }}" class="btn-edit">Edit</a>
+                      @endcan
+                      @can('delete', $vehicle)
                       <form method="POST" action="{{ route('fleet.destroy', $vehicle) }}" data-confirm="Delete vehicle {{ $vehicle->serial }}?">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn-delete">Delete</button>
                       </form>
+                      @endcan
                     </div>
                   </td>
-                @endif
               </tr>
             @empty
-              <tr class="empty-row"><td colspan="{{ auth()->user()->hasRole('admin', 'staff') ? 4 : 3 }}">No vehicles found.</td></tr>
+              <tr class="empty-row"><td colspan="4">No vehicles found.</td></tr>
             @endforelse
           </tbody>
         </table>
       </div>
     </div>
+
+    @can('create', \App\Models\Vehicle::class)
+    <a href="{{ route('fleet.create') }}" class="btn-add">Add Another Vehicle</a>
+    @endcan
 
     @if ($vehicles->hasPages())
       <nav class="list-pagination" aria-label="Pagination">
@@ -77,9 +81,6 @@
       </nav>
     @endif
 
-    @if (auth()->user()->hasRole('admin', 'staff'))
-      <a href="{{ route('fleet.create') }}" class="btn-add">Add Another Vehicle</a>
-    @endif
   </div>
 </main>
 @endsection
